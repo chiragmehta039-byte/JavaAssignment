@@ -4,6 +4,8 @@ import com.fulfilment.application.monolith.warehouses.adapters.database.Warehous
 import com.fulfilment.application.monolith.warehouses.domain.ports.ArchiveWarehouseOperation;
 import com.fulfilment.application.monolith.warehouses.domain.ports.CreateWarehouseOperation;
 import com.fulfilment.application.monolith.warehouses.domain.ports.ReplaceWarehouseOperation;
+import com.fulfilment.application.monolith.warehouses.domain.usecases.CreateWarehouseUseCase;
+import com.fulfilment.application.monolith.warehouses.domain.usecases.ReplaceWarehouseUseCase;
 import com.warehouse.api.WarehouseResource;
 import com.warehouse.api.beans.Warehouse;
 import jakarta.enterprise.context.RequestScoped;
@@ -98,6 +100,82 @@ public class WarehouseResourceImpl implements WarehouseResource {
     } catch (IllegalArgumentException e) {
       throw new WebApplicationException(e.getMessage(), 400);
     }
+  }
+
+  @Override
+  public List<Warehouse> searchWarehouses(
+          String location,
+          java.math.BigInteger minCapacity,
+          java.math.BigInteger maxCapacity,
+          String sortBy,
+          String sortOrder,
+          java.math.BigInteger page,
+          java.math.BigInteger pageSize) {
+
+    var stream = warehouseRepository.getAll().stream()
+
+            .filter(w -> w.archivedAt == null)
+
+            .filter(w ->
+                    location == null ||
+                            w.location.equalsIgnoreCase(location))
+
+            .filter(w ->
+                    minCapacity == null ||
+                            w.capacity >= minCapacity.intValue())
+
+            .filter(w ->
+                    maxCapacity == null ||
+                            w.capacity <= maxCapacity.intValue());
+
+    // Sorting
+    if (sortBy != null) {
+
+      java.util.Comparator<com.fulfilment.application.monolith.warehouses.domain.models.Warehouse>
+              comparator = null;
+
+      switch (sortBy.toLowerCase()) {
+
+        case "capacity":
+          comparator = java.util.Comparator.comparingInt(w -> w.capacity);
+          break;
+
+        case "location":
+          comparator = java.util.Comparator.comparing(w -> w.location);
+          break;
+
+        case "stock":
+          comparator = java.util.Comparator.comparingInt(w -> w.stock);
+          break;
+
+        default:
+          throw new WebApplicationException(
+                  "Invalid sortBy field: " + sortBy,
+                  400);
+      }
+
+      if ("desc".equalsIgnoreCase(sortOrder)) {
+        comparator = comparator.reversed();
+      }
+
+      stream = stream.sorted(comparator);
+    }
+
+    // Pagination
+    int pageNumber = page != null ? page.intValue() : 0;
+    int size = pageSize != null ? pageSize.intValue() : 10;
+
+    if (pageNumber < 0 || size <= 0) {
+      throw new WebApplicationException(
+              "Invalid pagination values",
+              400);
+    }
+
+    return stream
+            .skip((long) pageNumber * size)
+            .limit(size)
+            .map(this::toWarehouseResponse)
+            .toList();
   }
 
   private Warehouse toWarehouseResponse(

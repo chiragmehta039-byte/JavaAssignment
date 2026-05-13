@@ -9,6 +9,8 @@ import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import java.math.BigInteger;
 import java.util.List;
 
 /**
@@ -24,6 +26,14 @@ public interface WarehouseResource {
   @Produces("application/json")
   @Consumes("application/json")
   Warehouse createANewWarehouseUnit(@NotNull Warehouse data);
+
+  @Path("/search")
+  @GET
+  @Produces("application/json")
+  List<Warehouse> searchWarehouses(@QueryParam("location") String location,
+      @QueryParam("minCapacity") BigInteger minCapacity, @QueryParam("maxCapacity") BigInteger maxCapacity,
+      @QueryParam("sortBy") String sortBy, @QueryParam("sortOrder") String sortOrder,
+      @QueryParam("page") BigInteger page, @QueryParam("pageSize") BigInteger pageSize);
 
   @Path("/{id}")
   @GET

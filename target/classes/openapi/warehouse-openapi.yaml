@@ -32,9 +32,50 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Warehouse'
-        
         '400':
           description: Invalid request parameters
+
+  /warehouse/search:
+    get:
+      summary: Search warehouses
+      parameters:
+        - in: query
+          name: location
+          schema:
+            type: string
+        - in: query
+          name: minCapacity
+          schema:
+            type: integer
+        - in: query
+          name: maxCapacity
+          schema:
+            type: integer
+        - in: query
+          name: sortBy
+          schema:
+            type: string
+        - in: query
+          name: sortOrder
+          schema:
+            type: string
+        - in: query
+          name: page
+          schema:
+            type: integer
+        - in: query
+          name: pageSize
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of filtered warehouses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Warehouse'
 
   /warehouse/{id}:
     get:
@@ -99,9 +140,9 @@ paths:
                 $ref: '#/components/schemas/Warehouse'
         '404':
           description: Warehouse unit not found
-
         '400':
           description: Invalid request parameters
+
 components:
   schemas:
     Warehouse:
