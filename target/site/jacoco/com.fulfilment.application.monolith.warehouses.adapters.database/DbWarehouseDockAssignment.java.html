@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DbWarehouseDockAssignment.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">java-code-assignment</a> &gt; <a href="index.source.html" class="el_package">com.fulfilment.application.monolith.warehouses.adapters.database</a> &gt; <span class="el_source">DbWarehouseDockAssignment.java</span></div><h1>DbWarehouseDockAssignment.java</h1><pre class="source lang-java linenums">package com.fulfilment.application.monolith.warehouses.adapters.database;
+
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = &quot;warehouse_dock_assignment&quot;)
+<span class="fc" id="L7">public class DbWarehouseDockAssignment {</span>
+
+    @Id @GeneratedValue
+    public Long id;
+
+    public String dockId;
+    public String warehouseCode;
+    public Boolean occupied;
+    public String status;
+
+    public static DbWarehouseDockAssignment create(String dockId, String code, Boolean occupied) {
+<span class="fc" id="L18">        DbWarehouseDockAssignment d = new DbWarehouseDockAssignment();</span>
+<span class="fc" id="L19">        d.dockId = dockId;</span>
+<span class="fc" id="L20">        d.warehouseCode = code;</span>
+<span class="fc" id="L21">        d.occupied = occupied;</span>
+
+<span class="fc bfc" id="L23" title="All 2 branches covered.">        if (occupied == null) d.status = &quot;UNKNOWN&quot;;</span>
+<span class="fc bfc" id="L24" title="All 2 branches covered.">        else if (Boolean.TRUE.equals(occupied)) d.status = &quot;BUSY&quot;;</span>
+<span class="fc" id="L25">        else d.status = &quot;FREE&quot;;</span>
+
+<span class="fc" id="L27">        return d;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -15,68 +15,113 @@ import static io.smallrye.config._private.ConfigLogging.log;
 
   @Override
   public List&lt;Warehouse&gt; getAll() {
-<span class="nc" id="L18">    return this.listAll().stream().map(DbWarehouse::toWarehouse).toList();</span>
+    try {
+<span class="nc" id="L19">      return this.listAll().stream()</span>
+<span class="nc" id="L20">              .map(DbWarehouse::toWarehouse)</span>
+<span class="nc" id="L21">              .toList();</span>
+<span class="nc" id="L22">    } catch (NullPointerException e) {</span>
+<span class="nc" id="L23">      log.error(&quot;Error while fetching warehouses&quot;, e);</span>
+<span class="nc" id="L24">      throw new RuntimeException(&quot;Failed to fetch warehouses&quot;);</span>
+    }
   }
 
   @Transactional
   @Override
   public void create(Warehouse warehouse) {
-<span class="nc" id="L24">    log.infof(&quot;Creating warehouse with businessUnitCode=%s&quot;, warehouse.businessUnitCode);</span>
+    try {
+<span class="nc bnc" id="L32" title="All 2 branches missed.">      if (warehouse == null) {</span>
+<span class="nc" id="L33">        throw new NullPointerException(&quot;Warehouse is null&quot;);</span>
+      }
 
-<span class="nc" id="L26">    DbWarehouse dbWarehouse = new DbWarehouse();</span>
-<span class="nc" id="L27">    dbWarehouse.businessUnitCode = warehouse.businessUnitCode;</span>
-<span class="nc" id="L28">    dbWarehouse.location = warehouse.location;</span>
-<span class="nc" id="L29">    dbWarehouse.capacity = warehouse.capacity;</span>
-<span class="nc" id="L30">    dbWarehouse.stock = warehouse.stock;</span>
-<span class="nc" id="L31">    dbWarehouse.createdAt = warehouse.createdAt;</span>
-<span class="nc" id="L32">    dbWarehouse.archivedAt = warehouse.archivedAt;</span>
+<span class="nc" id="L36">      log.infof(&quot;Creating warehouse with businessUnitCode=%s&quot;, warehouse.businessUnitCode);</span>
 
-<span class="nc" id="L34">    this.persist(dbWarehouse);</span>
-<span class="nc" id="L35">    log.infof(&quot;Warehouse created successfully: %s&quot;, warehouse.businessUnitCode);</span>
+<span class="nc" id="L38">      DbWarehouse dbWarehouse = new DbWarehouse();</span>
+<span class="nc" id="L39">      dbWarehouse.businessUnitCode = warehouse.businessUnitCode;</span>
+<span class="nc" id="L40">      dbWarehouse.location = warehouse.location;</span>
+<span class="nc" id="L41">      dbWarehouse.capacity = warehouse.capacity;</span>
+<span class="nc" id="L42">      dbWarehouse.stock = warehouse.stock;</span>
+<span class="nc" id="L43">      dbWarehouse.createdAt = warehouse.createdAt;</span>
+<span class="nc" id="L44">      dbWarehouse.archivedAt = warehouse.archivedAt;</span>
 
-<span class="nc" id="L37">  }</span>
+<span class="nc" id="L46">      this.persist(dbWarehouse);</span>
 
-  @Override
-  public void update(Warehouse warehouse) {
+<span class="nc" id="L48">      log.infof(&quot;Warehouse created successfully: %s&quot;, warehouse.businessUnitCode);</span>
 
-
-<span class="nc" id="L43">      DbWarehouse entity = find(&quot;businessUnitCode&quot;, warehouse.businessUnitCode)</span>
-<span class="nc" id="L44">              .firstResult();</span>
-
-<span class="nc" id="L46">      entity.location = warehouse.location;</span>
-<span class="nc" id="L47">      entity.capacity = warehouse.capacity;</span>
-<span class="nc" id="L48">      entity.stock = warehouse.stock;</span>
-<span class="nc" id="L49">      entity.archivedAt = warehouse.archivedAt;</span>
-
-      // ❌ NO JPQL UPDATE
-      // ❌ NO flush/clear
-
+<span class="nc" id="L50">    } catch (NullPointerException e) {</span>
+<span class="nc" id="L51">      log.error(&quot;Null pointer while creating warehouse&quot;, e);</span>
+<span class="nc" id="L52">      throw new IllegalArgumentException(&quot;Invalid warehouse data&quot;);</span>
+<span class="nc" id="L53">    }</span>
 <span class="nc" id="L54">  }</span>
 
   @Override
   @Transactional
+  public void update(Warehouse warehouse) {
+    try {
+<span class="nc bnc" id="L60" title="All 2 branches missed.">      if (warehouse == null) {</span>
+<span class="nc" id="L61">        throw new NullPointerException(&quot;Warehouse is null&quot;);</span>
+      }
+
+<span class="nc" id="L64">      DbWarehouse entity = find(&quot;businessUnitCode&quot;, warehouse.businessUnitCode)</span>
+<span class="nc" id="L65">              .firstResult();</span>
+
+<span class="nc bnc" id="L67" title="All 2 branches missed.">      if (entity == null) {</span>
+<span class="nc" id="L68">        throw new IllegalArgumentException(&quot;Warehouse not found&quot;);</span>
+      }
+
+<span class="nc" id="L71">      entity.location = warehouse.location;</span>
+<span class="nc" id="L72">      entity.capacity = warehouse.capacity;</span>
+<span class="nc" id="L73">      entity.stock = warehouse.stock;</span>
+<span class="nc" id="L74">      entity.archivedAt = warehouse.archivedAt;</span>
+
+<span class="nc" id="L76">    } catch (NullPointerException e) {</span>
+<span class="nc" id="L77">      log.error(&quot;Null pointer while updating warehouse&quot;, e);</span>
+<span class="nc" id="L78">      throw new IllegalArgumentException(&quot;Invalid warehouse data&quot;);</span>
+<span class="nc" id="L79">    }</span>
+<span class="nc" id="L80">  }</span>
+
+  @Override
+  @Transactional
   public void remove(Warehouse warehouse) {
-<span class="nc" id="L59">    log.infof(&quot;Archiving warehouse: %s&quot;, warehouse.businessUnitCode);</span>
 
-<span class="nc" id="L61">    DbWarehouse entity = find(&quot;businessUnitCode&quot;, warehouse.businessUnitCode)</span>
-<span class="nc" id="L62">            .firstResult();</span>
+    try {
+<span class="nc bnc" id="L87" title="All 2 branches missed.">      if (warehouse == null) {</span>
+<span class="nc" id="L88">        throw new NullPointerException(&quot;Warehouse is null&quot;);</span>
+      }
 
-<span class="nc bnc" id="L64" title="All 2 branches missed.">    if (entity == null) {</span>
-<span class="nc" id="L65">      log.warnf(&quot;Warehouse not found: %s&quot;, warehouse.businessUnitCode);</span>
-<span class="nc" id="L66">      return;</span>
-      // OR throw exception if tests expect failure
-    }
+<span class="nc" id="L91">      log.infof(&quot;Archiving warehouse: %s&quot;, warehouse.businessUnitCode);</span>
 
-<span class="nc" id="L70">    entity.archivedAt = java.time.LocalDateTime.now();</span>
+<span class="nc" id="L93">      DbWarehouse entity = find(&quot;businessUnitCode&quot;, warehouse.businessUnitCode)</span>
+<span class="nc" id="L94">              .firstResult();</span>
 
-    // IMPORTANT: persist update (Panache managed entity auto-updates in transaction)
-<span class="nc" id="L73">    persist(entity);</span>
-<span class="nc" id="L74">  }</span>
+<span class="nc bnc" id="L96" title="All 2 branches missed.">      if (entity == null) {</span>
+<span class="nc" id="L97">        log.warnf(&quot;Warehouse not found: %s&quot;, warehouse.businessUnitCode);</span>
+<span class="nc" id="L98">        return;</span>
+      }
+
+<span class="nc" id="L101">      entity.archivedAt = java.time.LocalDateTime.now();</span>
+
+<span class="nc" id="L103">    } catch (NullPointerException e) {</span>
+<span class="nc" id="L104">      log.error(&quot;Null pointer while removing warehouse&quot;, e);</span>
+<span class="nc" id="L105">      throw new IllegalArgumentException(&quot;Invalid warehouse data&quot;);</span>
+<span class="nc" id="L106">    }</span>
+<span class="nc" id="L107">  }</span>
 
   @Override
   public Warehouse findByBusinessUnitCode(String buCode) {
-<span class="nc" id="L78">    DbWarehouse dbWarehouse = find(&quot;businessUnitCode&quot;, buCode).firstResult();</span>
-<span class="nc bnc" id="L79" title="All 2 branches missed.">    return dbWarehouse != null ? dbWarehouse.toWarehouse() : null;</span>
+
+    try {
+<span class="nc bnc" id="L113" title="All 2 branches missed.">      if (buCode == null) {</span>
+<span class="nc" id="L114">        throw new NullPointerException(&quot;BusinessUnitCode is null&quot;);</span>
+      }
+
+<span class="nc" id="L117">      DbWarehouse dbWarehouse = find(&quot;businessUnitCode&quot;, buCode).firstResult();</span>
+
+<span class="nc bnc" id="L119" title="All 2 branches missed.">      return dbWarehouse != null ? dbWarehouse.toWarehouse() : null;</span>
+
+<span class="nc" id="L121">    } catch (NullPointerException e) {</span>
+<span class="nc" id="L122">      log.error(&quot;Null pointer while finding warehouse&quot;, e);</span>
+<span class="nc" id="L123">      throw new IllegalArgumentException(&quot;Invalid business unit code&quot;);</span>
+    }
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

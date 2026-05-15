@@ -16,184 +16,146 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Sophisticated Test: Testcontainers Integration Test
- * 
- * Uses real PostgreSQL database via Testcontainers instead of mocks.
- * Tests complex database scenarios, constraints, and queries against
- * actual database behavior.
- * 
- * Quarkus provides built-in support for spinning up test databases.
- */
 @QuarkusTest
 public class WarehouseTestcontainersIT {
 
-  @Inject
-  WarehouseRepository warehouseRepository;
-
-  @Inject
-  LocationGateway locationResolver;
-
-  @Inject
-  EntityManager em;
+  @Inject WarehouseRepository warehouseRepository;
+  @Inject LocationGateway locationResolver;
+  @Inject EntityManager em;
 
   private CreateWarehouseUseCase createWarehouseUseCase;
 
   @BeforeEach
   @Transactional
   public void setup() {
-    // Clean database
     em.createQuery("DELETE FROM DbWarehouse").executeUpdate();
-    
     createWarehouseUseCase = new CreateWarehouseUseCase(warehouseRepository, locationResolver);
   }
 
-  /**
-   * Test database unique constraint on business unit code.
-   */
+  // ---------------- UNIQUE CONSTRAINT ----------------
   @Test
   @Transactional
   public void testDatabaseUniqueConstraintOnBusinessUnitCode() {
-    // Create first warehouse
-    Warehouse warehouse1 = new Warehouse();
-    warehouse1.businessUnitCode = "DB-UNIQUE-001";
-    warehouse1.location = "AMSTERDAM-001";
-    warehouse1.capacity = 50;
-    warehouse1.stock = 10;
-    warehouse1.createdAt = java.time.LocalDateTime.now();
-    
-    createWarehouseUseCase.create(warehouse1);
-    
-    // Try to create second with same code directly via DB
-    DbWarehouse dbWarehouse = new DbWarehouse();
-    dbWarehouse.businessUnitCode = "DB-UNIQUE-001";  // Duplicate!
-    dbWarehouse.location = "ZWOLLE-001";
-    dbWarehouse.capacity = 30;
-    dbWarehouse.stock = 5;
-    dbWarehouse.createdAt = java.time.LocalDateTime.now();
-    
-    // Database should reject this
+
+    Warehouse w1 = new Warehouse();
+    w1.businessUnitCode = "DB-UNIQUE-001";
+    w1.location = "AMSTERDAM-001";
+    w1.capacity = 50;
+    w1.stock = 10;
+
+    createWarehouseUseCase.create(w1);
+
+    DbWarehouse duplicate = new DbWarehouse();
+    duplicate.businessUnitCode = "DB-UNIQUE-001";
+    duplicate.location = "ZWOLLE-001";
+    duplicate.capacity = 30;
+    duplicate.stock = 5;
+
     assertThrows(Exception.class, () -> {
-      em.persist(dbWarehouse);
+      em.persist(duplicate);
       em.flush();
     });
   }
 
-  /**
-   * Test query performance and correctness with multiple warehouses.
-   */
+  // ---------------- MULTI DATA SCENARIO ----------------
   @Test
   @Transactional
   public void testQueryingMultipleWarehousesAtSameLocation() {
-    // Create multiple warehouses at same location
-    for (int i = 0; i < 5; i++) {
-      Warehouse warehouse = new Warehouse();
-      warehouse.businessUnitCode = "QUERY-TEST-" + i;
-      warehouse.location = "AMSTERDAM-001";
-      warehouse.capacity = 20 + (i * 10);
-      warehouse.stock = 5 + i;
-      
-      createWarehouseUseCase.create(warehouse);
+
+    for (int i = 0; i < 6; i++) {
+      Warehouse w = new Warehouse();
+      w.businessUnitCode = "QUERY-" + i;
+      w.location = "AMSTERDAM-001";
+      w.capacity = 20 + i;
+      w.stock = 5 + i;
+      createWarehouseUseCase.create(w);
     }
-    
-    // Query all warehouses
+
     List<Warehouse> all = warehouseRepository.getAll();
-    
-    // Should have at least 5
-    assertTrue(all.size() >= 5);
-    
-    // Verify they're from Amsterdam
-    long amsterdamCount = all.stream()
-        .filter(w -> "AMSTERDAM-001".equals(w.location))
-        .count();
-    
-    assertEquals(5, amsterdamCount);
+
+    long count = all.stream()
+            .filter(w -> "AMSTERDAM-001".equals(w.location))
+            .count();
+
+    assertTrue(count >= 5);
   }
 
-  /**
-   * Test database handles NULL values correctly.
-   */
+  // ---------------- NULL EDGE CASE ----------------
   @Test
   @Transactional
   public void testNullFieldsHandling() {
-    DbWarehouse dbWarehouse = new DbWarehouse();
-    dbWarehouse.businessUnitCode = "NULL-TEST-001";
-    dbWarehouse.location = "ZWOLLE-001";
-    dbWarehouse.capacity = 50;
-    dbWarehouse.stock = 10;
-    dbWarehouse.createdAt = java.time.LocalDateTime.now();
-    dbWarehouse.archivedAt = null;  // NULL archived date
-    
-    em.persist(dbWarehouse);
+
+    DbWarehouse db = new DbWarehouse();
+    db.businessUnitCode = "NULL-TEST";
+    db.location = "ZWOLLE-001";
+    db.capacity = 50;
+    db.stock = 10;
+    db.createdAt = java.time.LocalDateTime.now();
+    db.archivedAt = null;
+
+    em.persist(db);
     em.flush();
-    
-    // Retrieve and verify
-    DbWarehouse found = em.find(DbWarehouse.class, dbWarehouse.id);
+
+    DbWarehouse found = em.find(DbWarehouse.class, db.id);
+
     assertNotNull(found);
     assertNull(found.archivedAt);
   }
 
-  /**
-   * Test database transaction rollback behavior.
-   */
+  // ---------------- ROLLBACK ----------------
   @Test
   public void testTransactionRollbackDoesNotPersist() {
+
     try {
-      performFailingTransaction();
-    } catch (Exception e) {
-      // Expected
-    }
-    
-    // Verify nothing was persisted
-    Warehouse found = warehouseRepository.findByBusinessUnitCode("ROLLBACK-TEST-001");
-    assertNull(found, "Rolled back warehouse should not exist in database");
+      failTransaction();
+    } catch (Exception ignored) {}
+
+    Warehouse found = warehouseRepository.findByBusinessUnitCode("ROLLBACK-001");
+
+    assertNull(found);
   }
 
   @Transactional
-  void performFailingTransaction() {
-    Warehouse warehouse = new Warehouse();
-    warehouse.businessUnitCode = "ROLLBACK-TEST-001";
-    warehouse.location = "TILBURG-001";
-    warehouse.capacity = 30;
-    warehouse.stock = 10;
-    
-    createWarehouseUseCase.create(warehouse);
-    
-    // Force rollback
-    throw new RuntimeException("Simulated failure");
+  void failTransaction() {
+    Warehouse w = new Warehouse();
+    w.businessUnitCode = "ROLLBACK-001";
+    w.location = "TILBURG-001";
+    w.capacity = 20;
+    w.stock = 5;
+
+    createWarehouseUseCase.create(w);
+
+    throw new RuntimeException("force rollback");
   }
 
-  /**
-   * Test complex query: find warehouses by location and capacity range.
-   */
+  // ---------------- COMPLEX QUERY ----------------
   @Test
   @Transactional
   public void testComplexQueryByLocationAndCapacity() {
-    // Create warehouses with different capacities
-    createWarehouse("COMPLEX-1", "AMSTERDAM-001", 30);
-    createWarehouse("COMPLEX-2", "AMSTERDAM-001", 50);
-    createWarehouse("COMPLEX-3", "AMSTERDAM-001", 70);
-    createWarehouse("COMPLEX-4", "ZWOLLE-001", 40);
-    
-    // Query using JPQL
+
+    create("C1", "AMSTERDAM-001", 30);
+    create("C2", "AMSTERDAM-001", 50);
+    create("C3", "AMSTERDAM-001", 70);
+    create("C4", "ZWOLLE-001", 40);
+
     List<DbWarehouse> results = em.createQuery(
-        "SELECT w FROM DbWarehouse w WHERE w.location = :location AND w.capacity BETWEEN :min AND :max",
-        DbWarehouse.class)
-        .setParameter("location", "AMSTERDAM-001")
-        .setParameter("min", 40)
-        .setParameter("max", 70)
-        .getResultList();
-    
-    // Should find COMPLEX-2 and COMPLEX-3
+                    "SELECT w FROM DbWarehouse w WHERE w.location = :loc AND w.capacity BETWEEN :min AND :max",
+                    DbWarehouse.class)
+            .setParameter("loc", "AMSTERDAM-001")
+            .setParameter("min", 40)
+            .setParameter("max", 70)
+            .getResultList();
+
     assertEquals(2, results.size());
   }
 
-  private void createWarehouse(String code, String location, int capacity) {
-    Warehouse warehouse = new Warehouse();
-    warehouse.businessUnitCode = code;
-    warehouse.location = location;
-    warehouse.capacity = capacity;
-    warehouse.stock = 10;
-    createWarehouseUseCase.create(warehouse);
+  // ---------------- HELPER ----------------
+  private void create(String code, String location, int capacity) {
+    Warehouse w = new Warehouse();
+    w.businessUnitCode = code;
+    w.location = location;
+    w.capacity = capacity;
+    w.stock = 10;
+    createWarehouseUseCase.create(w);
   }
 }

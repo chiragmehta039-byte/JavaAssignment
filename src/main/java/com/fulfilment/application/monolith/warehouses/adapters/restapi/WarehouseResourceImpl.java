@@ -41,7 +41,7 @@ public class WarehouseResourceImpl implements WarehouseResource {
     try {
       // Create warehouse through use case (includes validations)
       createWarehouseOperation.create(domainWarehouse);
-      
+
       // Return the created warehouse
       return toWarehouseResponse(domainWarehouse);
     } catch (IllegalArgumentException e) {
@@ -53,11 +53,11 @@ public class WarehouseResourceImpl implements WarehouseResource {
   public Warehouse getAWarehouseUnitByID(String id) {
     // Find warehouse by business unit code
     var domainWarehouse = warehouseRepository.findByBusinessUnitCode(id);
-    
+
     if (domainWarehouse == null) {
       throw new WebApplicationException("Warehouse with business unit code '" + id + "' not found", 404);
     }
-    
+
     return toWarehouseResponse(domainWarehouse);
   }
 
@@ -82,7 +82,7 @@ public class WarehouseResourceImpl implements WarehouseResource {
   @Override
   @Transactional
   public Warehouse replaceTheCurrentActiveWarehouse(
-      String businessUnitCode, @NotNull Warehouse data) {
+          String businessUnitCode, @NotNull Warehouse data) {
     // Convert API model to domain model
     var domainWarehouse = new com.fulfilment.application.monolith.warehouses.domain.models.Warehouse();
     domainWarehouse.businessUnitCode = businessUnitCode; // Use businessUnitCode from path
@@ -179,7 +179,7 @@ public class WarehouseResourceImpl implements WarehouseResource {
   }
 
   private Warehouse toWarehouseResponse(
-      com.fulfilment.application.monolith.warehouses.domain.models.Warehouse warehouse) {
+          com.fulfilment.application.monolith.warehouses.domain.models.Warehouse warehouse) {
     var response = new Warehouse();
     response.setBusinessUnitCode(warehouse.businessUnitCode);
     response.setLocation(warehouse.location);

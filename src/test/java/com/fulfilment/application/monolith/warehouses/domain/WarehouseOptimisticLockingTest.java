@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Sophisticated Test: Optimistic Locking
- * 
+ *
  * Demonstrates handling of concurrent modifications using JPA's @Version field.
  * Optimistic locking prevents lost updates when multiple transactions
  * try to modify the same entity.
@@ -32,7 +32,7 @@ public class WarehouseOptimisticLockingTest {
   public void setup() {
     // Clean slate
     em.createQuery("DELETE FROM DbWarehouse").executeUpdate();
-    
+
     // Create a warehouse
     DbWarehouse warehouse = new DbWarehouse();
     warehouse.businessUnitCode = "OPT-LOCK-001";
@@ -40,16 +40,16 @@ public class WarehouseOptimisticLockingTest {
     warehouse.capacity = 100;
     warehouse.stock = 50;
     warehouse.createdAt = java.time.LocalDateTime.now();
-    
+
     em.persist(warehouse);
     em.flush();
-    
+
     warehouseId = warehouse.id;
   }
 
   /**
    * Test that concurrent modifications trigger OptimisticLockException.
-   * 
+   *
    * Scenario:
    * 1. Transaction 1 reads warehouse (version = 0)
    * 2. Transaction 2 reads same warehouse (version = 0)
@@ -63,13 +63,13 @@ public class WarehouseOptimisticLockingTest {
     // Simulate two separate transactions reading the same warehouse
     DbWarehouse warehouse1 = em.find(DbWarehouse.class, warehouseId);
     DbWarehouse warehouse2 = em.find(DbWarehouse.class, warehouseId);
-    
+
     // Both have the same version initially
     assertEquals(warehouse1.version, warehouse2.version);
-    
+
     // First transaction updates
     updateWarehouseInSeparateTransaction(warehouseId, 80);
-    
+
     // Second transaction tries to update with stale version
     // This should throw OptimisticLockException
     assertThrows(OptimisticLockException.class, () -> {
@@ -84,12 +84,12 @@ public class WarehouseOptimisticLockingTest {
   public void testVersionIncrementsonUpdate() {
     DbWarehouse warehouse = em.find(DbWarehouse.class, warehouseId);
     Long initialVersion = warehouse.version;
-    
+
     // Update the warehouse
     warehouse.stock = 60;
     em.merge(warehouse);
     em.flush();
-    
+
     // Version should have incremented
     assertTrue(warehouse.version > initialVersion);
   }

@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>WarehouseSearchService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">java-code-assignment</a> &gt; <a href="index.source.html" class="el_package">com.fulfilment.application.monolith.warehouses.service</a> &gt; <span class="el_source">WarehouseSearchService.java</span></div><h1>WarehouseSearchService.java</h1><pre class="source lang-java linenums">package com.fulfilment.application.monolith.warehouses.service;
+
+import com.fulfilment.application.monolith.warehouses.domain.models.Warehouse;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.ws.rs.WebApplicationException;
+
+import java.math.BigInteger;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Stream;
+
+@ApplicationScoped
+<span class="fc" id="L13">public class WarehouseSearchService {</span>
+
+    public List&lt;Warehouse&gt; search(
+            List&lt;Warehouse&gt; warehouses,
+            String location,
+            BigInteger minCapacity,
+            BigInteger maxCapacity,
+            String sortBy,
+            String sortOrder,
+            BigInteger page,
+            BigInteger pageSize
+    ) {
+
+<span class="fc bfc" id="L26" title="All 2 branches covered.">        if (warehouses == null) {</span>
+<span class="fc" id="L27">            throw new WebApplicationException(&quot;Warehouse list cannot be null&quot;, 400);</span>
+        }
+
+<span class="fc" id="L30">        Stream&lt;Warehouse&gt; stream = applyFilters(warehouses, location, minCapacity, maxCapacity);</span>
+
+<span class="fc" id="L32">        stream = applySorting(stream, sortBy, sortOrder);</span>
+
+<span class="fc" id="L34">        stream = applyPagination(stream, page, pageSize);</span>
+
+<span class="fc" id="L36">        return stream.toList();</span>
+    }
+
+    // ---------------- FILTER ----------------
+    private Stream&lt;Warehouse&gt; applyFilters(
+            List&lt;Warehouse&gt; warehouses,
+            String location,
+            BigInteger minCapacity,
+            BigInteger maxCapacity
+    ) {
+<span class="fc" id="L46">        return warehouses.stream()</span>
+<span class="fc bfc" id="L47" title="All 2 branches covered.">                .filter(w -&gt; w != null)</span>
+<span class="fc bfc" id="L48" title="All 2 branches covered.">                .filter(w -&gt; w.archivedAt == null)</span>
+<span class="pc bpc" id="L49" title="1 of 4 branches missed.">                .filter(w -&gt; location == null ||</span>
+<span class="fc bfc" id="L50" title="All 2 branches covered.">                        (w.location != null &amp;&amp; w.location.equalsIgnoreCase(location)))</span>
+<span class="pc bpc" id="L51" title="1 of 4 branches missed.">                .filter(w -&gt; minCapacity == null ||</span>
+<span class="fc bfc" id="L52" title="All 2 branches covered.">                        (w.capacity != null &amp;&amp; w.capacity &gt;= minCapacity.intValue()))</span>
+<span class="pc bpc" id="L53" title="1 of 4 branches missed.">                .filter(w -&gt; maxCapacity == null ||</span>
+<span class="pc bpc" id="L54" title="1 of 2 branches missed.">                        (w.capacity != null &amp;&amp; w.capacity &lt;= maxCapacity.intValue()));</span>
+    }
+
+    // ---------------- SORT ----------------
+    private Stream&lt;Warehouse&gt; applySorting(
+            Stream&lt;Warehouse&gt; stream,
+            String sortBy,
+            String sortOrder
+    ) {
+
+<span class="fc bfc" id="L64" title="All 2 branches covered.">        if (sortBy == null) return stream;</span>
+
+        Comparator&lt;Warehouse&gt; comparator;
+
+<span class="pc bpc" id="L68" title="2 of 4 branches missed.">        switch (sortBy.toLowerCase()) {</span>
+            case &quot;capacity&quot;:
+<span class="pc bpc" id="L70" title="1 of 2 branches missed.">                comparator = Comparator.comparingInt(w -&gt; w.capacity != null ? w.capacity : 0);</span>
+<span class="fc" id="L71">                break;</span>
+
+            case &quot;location&quot;:
+<span class="nc bnc" id="L74" title="All 2 branches missed.">                comparator = Comparator.comparing(w -&gt; w.location != null ? w.location : &quot;&quot;);</span>
+<span class="nc" id="L75">                break;</span>
+
+            case &quot;stock&quot;:
+<span class="nc" id="L78">                comparator = Comparator.comparingInt(w -&gt; w.stock);</span>
+<span class="nc" id="L79">                break;</span>
+
+            default:
+<span class="fc" id="L82">                throw new WebApplicationException(&quot;Invalid sortBy field: &quot; + sortBy, 400);</span>
+        }
+
+<span class="fc bfc" id="L85" title="All 2 branches covered.">        if (&quot;desc&quot;.equalsIgnoreCase(sortOrder)) {</span>
+<span class="fc" id="L86">            comparator = comparator.reversed();</span>
+        }
+
+<span class="fc" id="L89">        return stream.sorted(comparator);</span>
+    }
+
+    // ---------------- PAGINATION ----------------
+    private Stream&lt;Warehouse&gt; applyPagination(
+            Stream&lt;Warehouse&gt; stream,
+            BigInteger page,
+            BigInteger pageSize
+    ) {
+
+<span class="fc bfc" id="L99" title="All 2 branches covered.">        int pageNumber = page != null ? page.intValue() : 0;</span>
+<span class="fc bfc" id="L100" title="All 2 branches covered.">        int size = pageSize != null ? pageSize.intValue() : 10;</span>
+
+<span class="fc bfc" id="L102" title="All 2 branches covered.">        if (pageNumber &lt; 0) {</span>
+<span class="fc" id="L103">            throw new WebApplicationException(&quot;Page cannot be negative&quot;, 400);</span>
+        }
+
+<span class="fc bfc" id="L106" title="All 2 branches covered.">        if (size &lt;= 0) {</span>
+<span class="fc" id="L107">            throw new WebApplicationException(&quot;Page size must be greater than zero&quot;, 400);</span>
+        }
+
+<span class="fc" id="L110">        return stream</span>
+<span class="fc" id="L111">                .skip((long) pageNumber * size)</span>
+<span class="fc" id="L112">                .limit(size);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

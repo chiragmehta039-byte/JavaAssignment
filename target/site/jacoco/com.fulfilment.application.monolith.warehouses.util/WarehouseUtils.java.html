@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>WarehouseUtils.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">java-code-assignment</a> &gt; <a href="index.source.html" class="el_package">com.fulfilment.application.monolith.warehouses.util</a> &gt; <span class="el_source">WarehouseUtils.java</span></div><h1>WarehouseUtils.java</h1><pre class="source lang-java linenums">package com.fulfilment.application.monolith.warehouses.util;
+
+import com.fulfilment.application.monolith.warehouses.domain.models.Warehouse;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+
+<span class="nc" id="L10">public class WarehouseUtils {</span>
+
+    // ---------------- VALIDATION ----------------
+    public static boolean isValidWarehouse(Warehouse w) {
+
+<span class="fc bfc" id="L15" title="All 2 branches covered.">        if (w == null) return false;</span>
+
+<span class="pc bpc" id="L17" title="1 of 4 branches missed.">        if (w.businessUnitCode == null || w.businessUnitCode.isBlank()) return false;</span>
+
+<span class="pc bpc" id="L19" title="2 of 4 branches missed.">        if (w.location == null || w.location.isBlank()) return false;</span>
+
+<span class="pc bpc" id="L21" title="2 of 4 branches missed.">        if (w.capacity == null || w.capacity &lt; 0) return false;</span>
+
+<span class="pc bpc" id="L23" title="1 of 2 branches missed.">        if (w.stock &lt; 0) return false;</span>
+
+<span class="fc" id="L25">        return true;</span>
+    }
+
+    // ---------------- FILTER ACTIVE ----------------
+    public static List&lt;Warehouse&gt; filterActive(List&lt;Warehouse&gt; list) {
+
+<span class="fc" id="L31">        List&lt;Warehouse&gt; result = new ArrayList&lt;&gt;();</span>
+
+<span class="fc bfc" id="L33" title="All 2 branches covered.">        if (list == null) return result;</span>
+
+<span class="fc bfc" id="L35" title="All 2 branches covered.">        for (Warehouse w : list) {</span>
+<span class="pc bpc" id="L36" title="1 of 4 branches missed.">            if (w != null &amp;&amp; w.archivedAt == null) {</span>
+<span class="fc" id="L37">                result.add(w);</span>
+            }
+<span class="fc" id="L39">        }</span>
+
+<span class="fc" id="L41">        return result;</span>
+    }
+
+    // ---------------- FIND BY CODE ----------------
+    public static Warehouse findByCode(List&lt;Warehouse&gt; list, String code) {
+
+<span class="fc bfc" id="L47" title="All 4 branches covered.">        if (list == null || code == null) return null;</span>
+
+<span class="fc bfc" id="L49" title="All 2 branches covered.">        for (Warehouse w : list) {</span>
+<span class="pc bpc" id="L50" title="2 of 4 branches missed.">            if (w != null &amp;&amp; code.equals(w.businessUnitCode)) {</span>
+<span class="fc" id="L51">                return w;</span>
+            }
+<span class="nc" id="L53">        }</span>
+
+<span class="fc" id="L55">        return null;</span>
+    }
+
+    // ---------------- SAFE UPDATE ----------------
+    public static void safeUpdate(Warehouse target, Warehouse source) {
+
+<span class="fc bfc" id="L61" title="All 4 branches covered.">        if (target == null || source == null) {</span>
+<span class="fc" id="L62">            throw new IllegalArgumentException(&quot;Warehouse cannot be null&quot;);</span>
+        }
+
+<span class="pc bpc" id="L65" title="1 of 2 branches missed.">        if (source.location != null) {</span>
+<span class="fc" id="L66">            target.location = source.location;</span>
+        }
+
+<span class="pc bpc" id="L69" title="1 of 2 branches missed.">        if (source.capacity != null) {</span>
+<span class="fc" id="L70">            target.capacity = source.capacity;</span>
+        }
+
+<span class="fc" id="L73">        target.stock = source.stock;</span>
+<span class="fc" id="L74">    }</span>
+
+    // ---------------- SORT (FIXED) ----------------
+    public static List&lt;Warehouse&gt; sort(List&lt;Warehouse&gt; list, String field, boolean desc) {
+
+<span class="fc bfc" id="L79" title="All 2 branches covered.">        if (list == null) return new ArrayList&lt;&gt;();</span>
+
+        // ✅ IMPORTANT FIX: create mutable copy
+<span class="fc" id="L82">        List&lt;Warehouse&gt; mutableList = new ArrayList&lt;&gt;(list);</span>
+
+        Comparator&lt;Warehouse&gt; comparator;
+
+<span class="pc bpc" id="L86" title="3 of 6 branches missed.">        switch (field == null ? &quot;&quot; : field.toLowerCase()) {</span>
+
+            case &quot;capacity&quot;:
+<span class="pc bpc" id="L89" title="1 of 2 branches missed.">                comparator = Comparator.comparingInt(w -&gt; w.capacity != null ? w.capacity : 0);</span>
+<span class="fc" id="L90">                break;</span>
+
+            case &quot;location&quot;:
+<span class="nc bnc" id="L93" title="All 2 branches missed.">                comparator = Comparator.comparing(w -&gt; w.location != null ? w.location : &quot;&quot;);</span>
+<span class="nc" id="L94">                break;</span>
+
+            case &quot;stock&quot;:
+<span class="nc" id="L97">                comparator = Comparator.comparingInt(w -&gt; w.stock);</span>
+<span class="nc" id="L98">                break;</span>
+
+            default:
+<span class="fc" id="L101">                comparator = Comparator.comparing(</span>
+<span class="pc bpc" id="L102" title="1 of 2 branches missed.">                        w -&gt; w.businessUnitCode != null ? w.businessUnitCode : &quot;&quot;</span>
+                );
+        }
+
+<span class="fc bfc" id="L106" title="All 2 branches covered.">        if (desc) {</span>
+<span class="fc" id="L107">            comparator = comparator.reversed();</span>
+        }
+
+<span class="fc" id="L110">        mutableList.sort(comparator);</span>
+
+<span class="fc" id="L112">        return mutableList;</span>
+    }
+
+    // ---------------- DUPLICATE CHECK ----------------
+    public static boolean hasDuplicateCodes(List&lt;Warehouse&gt; list) {
+
+<span class="fc bfc" id="L118" title="All 2 branches covered.">        if (list == null) return false;</span>
+
+<span class="fc" id="L120">        List&lt;String&gt; seen = new ArrayList&lt;&gt;();</span>
+
+<span class="fc bfc" id="L122" title="All 2 branches covered.">        for (Warehouse w : list) {</span>
+
+<span class="pc bpc" id="L124" title="2 of 4 branches missed.">            if (w == null || w.businessUnitCode == null) continue;</span>
+
+<span class="fc bfc" id="L126" title="All 2 branches covered.">            if (seen.contains(w.businessUnitCode)) {</span>
+<span class="fc" id="L127">                return true;</span>
+            }
+
+<span class="fc" id="L130">            seen.add(w.businessUnitCode);</span>
+<span class="fc" id="L131">        }</span>
+
+<span class="fc" id="L133">        return false;</span>
+    }
+
+    // ---------------- NULL SAFE EQUALS ----------------
+    public static boolean safeEquals(String a, String b) {
+<span class="fc" id="L138">        return Objects.equals(a, b);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

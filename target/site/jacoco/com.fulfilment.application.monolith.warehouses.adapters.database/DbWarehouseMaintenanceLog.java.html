@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DbWarehouseMaintenanceLog.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">java-code-assignment</a> &gt; <a href="index.source.html" class="el_package">com.fulfilment.application.monolith.warehouses.adapters.database</a> &gt; <span class="el_source">DbWarehouseMaintenanceLog.java</span></div><h1>DbWarehouseMaintenanceLog.java</h1><pre class="source lang-java linenums">package com.fulfilment.application.monolith.warehouses.adapters.database;
+
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = &quot;warehouse_maintenance_log&quot;)
+<span class="fc" id="L8">public class DbWarehouseMaintenanceLog {</span>
+
+    @Id @GeneratedValue
+    public Long id;
+
+    public String warehouseCode;
+    public String type;
+    public Boolean completed;
+
+    public LocalDateTime logTime;
+
+    public String status;
+
+    public static DbWarehouseMaintenanceLog create(String code, String type, Boolean completed) {
+
+<span class="fc" id="L23">        DbWarehouseMaintenanceLog l = new DbWarehouseMaintenanceLog();</span>
+
+<span class="fc" id="L25">        l.warehouseCode = code;</span>
+<span class="fc" id="L26">        l.type = type;</span>
+<span class="fc" id="L27">        l.completed = completed;</span>
+<span class="fc" id="L28">        l.logTime = LocalDateTime.now();</span>
+
+<span class="fc bfc" id="L30" title="All 2 branches covered.">        if (code == null) {</span>
+<span class="fc" id="L31">            l.status = &quot;INVALID&quot;;</span>
+<span class="fc bfc" id="L32" title="All 2 branches covered.">        } else if (Boolean.TRUE.equals(completed)) {</span>
+<span class="fc" id="L33">            l.status = &quot;DONE&quot;;</span>
+<span class="fc bfc" id="L34" title="All 2 branches covered.">        } else if (&quot;URGENT&quot;.equals(type)) {</span>
+<span class="fc" id="L35">            l.status = &quot;PENDING_CRITICAL&quot;;</span>
+        } else {
+<span class="fc" id="L37">            l.status = &quot;PENDING&quot;;</span>
+        }
+
+<span class="fc" id="L40">        return l;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

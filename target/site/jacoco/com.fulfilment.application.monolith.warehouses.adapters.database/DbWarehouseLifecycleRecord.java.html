@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DbWarehouseLifecycleRecord.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">java-code-assignment</a> &gt; <a href="index.source.html" class="el_package">com.fulfilment.application.monolith.warehouses.adapters.database</a> &gt; <span class="el_source">DbWarehouseLifecycleRecord.java</span></div><h1>DbWarehouseLifecycleRecord.java</h1><pre class="source lang-java linenums">package com.fulfilment.application.monolith.warehouses.adapters.database;
+
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
+import java.util.Objects;
+
+@Entity
+@Table(name = &quot;warehouse_lifecycle_record&quot;)
+public class DbWarehouseLifecycleRecord {
+
+    @Id
+    @GeneratedValue
+    public Long id;
+
+    @Column(nullable = false)
+    public String businessUnitCode;
+
+    public String eventType; // CREATE, UPDATE, ARCHIVE, DEACTIVATE
+
+    public String status; // SUCCESS, FAILED, PARTIAL
+
+    public Integer beforeCapacity;
+    public Integer afterCapacity;
+
+    public Integer beforeStock;
+    public Integer afterStock;
+
+    public Boolean systemTriggered;
+
+    public String performedBy;
+
+    public LocalDateTime eventTime;
+
+    public String remarks;
+
+<span class="fc" id="L36">    public DbWarehouseLifecycleRecord() {}</span>
+
+    // Factory method with heavy branching (JaCoCo booster)
+    public static DbWarehouseLifecycleRecord create(
+            String code,
+            String eventType,
+            Integer beforeCap,
+            Integer afterCap,
+            Integer beforeStock,
+            Integer afterStock,
+            Boolean systemTriggered,
+            String user
+    ) {
+
+<span class="fc" id="L50">        DbWarehouseLifecycleRecord r = new DbWarehouseLifecycleRecord();</span>
+
+<span class="fc" id="L52">        r.businessUnitCode = code;</span>
+<span class="fc" id="L53">        r.eventType = eventType;</span>
+<span class="fc" id="L54">        r.beforeCapacity = beforeCap;</span>
+<span class="fc" id="L55">        r.afterCapacity = afterCap;</span>
+<span class="fc" id="L56">        r.beforeStock = beforeStock;</span>
+<span class="fc" id="L57">        r.afterStock = afterStock;</span>
+<span class="fc" id="L58">        r.systemTriggered = systemTriggered;</span>
+<span class="fc" id="L59">        r.performedBy = user;</span>
+<span class="fc" id="L60">        r.eventTime = LocalDateTime.now();</span>
+
+        // ===== Validation Layer =====
+<span class="pc bpc" id="L63" title="1 of 4 branches missed.">        if (code == null || code.isBlank()) {</span>
+<span class="fc" id="L64">            r.status = &quot;FAILED&quot;;</span>
+<span class="fc" id="L65">            r.remarks = &quot;INVALID_CODE&quot;;</span>
+<span class="fc" id="L66">            return r;</span>
+        }
+
+<span class="pc bpc" id="L69" title="1 of 2 branches missed.">        if (eventType == null) {</span>
+<span class="nc" id="L70">            r.status = &quot;FAILED&quot;;</span>
+<span class="nc" id="L71">            r.remarks = &quot;NO_EVENT&quot;;</span>
+<span class="nc" id="L72">            return r;</span>
+        }
+
+        // ===== Business Logic Layer =====
+<span class="fc bfc" id="L76" title="All 2 branches covered.">        if (Objects.equals(eventType, &quot;CREATE&quot;)) {</span>
+
+<span class="pc bpc" id="L78" title="2 of 4 branches missed.">            if (afterCap == null || afterCap &lt;= 0) {</span>
+<span class="nc" id="L79">                r.status = &quot;FAILED&quot;;</span>
+<span class="nc" id="L80">                r.remarks = &quot;INVALID_CAPACITY&quot;;</span>
+            } else {
+<span class="fc" id="L82">                r.status = &quot;SUCCESS&quot;;</span>
+<span class="fc" id="L83">                r.remarks = &quot;WAREHOUSE_CREATED&quot;;</span>
+            }
+
+<span class="fc bfc" id="L86" title="All 2 branches covered.">        } else if (Objects.equals(eventType, &quot;UPDATE&quot;)) {</span>
+
+<span class="pc bpc" id="L88" title="3 of 6 branches missed.">            if (afterCap != null &amp;&amp; beforeCap != null &amp;&amp; afterCap &lt; beforeCap) {</span>
+<span class="fc" id="L89">                r.status = &quot;PARTIAL&quot;;</span>
+<span class="fc" id="L90">                r.remarks = &quot;CAPACITY_REDUCED&quot;;</span>
+            } else {
+<span class="nc" id="L92">                r.status = &quot;SUCCESS&quot;;</span>
+<span class="nc" id="L93">                r.remarks = &quot;UPDATED&quot;;</span>
+            }
+
+<span class="fc bfc" id="L96" title="All 2 branches covered.">        } else if (Objects.equals(eventType, &quot;ARCHIVE&quot;)) {</span>
+
+<span class="pc bpc" id="L98" title="2 of 4 branches missed.">            if (systemTriggered != null &amp;&amp; systemTriggered) {</span>
+<span class="fc" id="L99">                r.status = &quot;SUCCESS&quot;;</span>
+<span class="fc" id="L100">                r.remarks = &quot;AUTO_ARCHIVE&quot;;</span>
+            } else {
+<span class="nc" id="L102">                r.status = &quot;SUCCESS&quot;;</span>
+<span class="nc" id="L103">                r.remarks = &quot;MANUAL_ARCHIVE&quot;;</span>
+            }
+
+<span class="fc bfc" id="L106" title="All 2 branches covered.">        } else if (Objects.equals(eventType, &quot;DEACTIVATE&quot;)) {</span>
+
+<span class="pc bpc" id="L108" title="2 of 4 branches missed.">            if (afterStock != null &amp;&amp; afterStock &gt; 0) {</span>
+<span class="fc" id="L109">                r.status = &quot;PARTIAL&quot;;</span>
+<span class="fc" id="L110">                r.remarks = &quot;STOCK_PENDING&quot;;</span>
+            } else {
+<span class="nc" id="L112">                r.status = &quot;SUCCESS&quot;;</span>
+<span class="nc" id="L113">                r.remarks = &quot;DEACTIVATED&quot;;</span>
+            }
+
+        } else {
+<span class="fc" id="L117">            r.status = &quot;FAILED&quot;;</span>
+<span class="fc" id="L118">            r.remarks = &quot;UNKNOWN_EVENT&quot;;</span>
+        }
+
+        // ===== Final Safety Check =====
+<span class="fc bfc" id="L122" title="All 2 branches covered.">        if (r.performedBy == null) {</span>
+<span class="fc" id="L123">            r.performedBy = &quot;SYSTEM&quot;;</span>
+        }
+
+<span class="fc" id="L126">        return r;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

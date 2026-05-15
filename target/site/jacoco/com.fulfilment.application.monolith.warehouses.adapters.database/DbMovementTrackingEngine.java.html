@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DbMovementTrackingEngine.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">java-code-assignment</a> &gt; <a href="index.source.html" class="el_package">com.fulfilment.application.monolith.warehouses.adapters.database</a> &gt; <span class="el_source">DbMovementTrackingEngine.java</span></div><h1>DbMovementTrackingEngine.java</h1><pre class="source lang-java linenums">package com.fulfilment.application.monolith.warehouses.adapters.database;
+
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = &quot;movement_tracking_engine&quot;)
+<span class="fc" id="L7">public class DbMovementTrackingEngine {</span>
+
+    @Id @GeneratedValue
+    public Long id;
+
+    public String itemCode;
+
+    public Integer movedIn;
+
+    public Integer movedOut;
+
+    public String movementStatus;
+
+    public static DbMovementTrackingEngine track(String code, Integer in, Integer out) {
+
+<span class="fc" id="L22">        DbMovementTrackingEngine m = new DbMovementTrackingEngine();</span>
+
+<span class="fc" id="L24">        m.itemCode = code;</span>
+<span class="fc" id="L25">        m.movedIn = in;</span>
+<span class="fc" id="L26">        m.movedOut = out;</span>
+
+<span class="fc bfc" id="L28" title="All 2 branches covered.">        if (code == null) {</span>
+<span class="fc" id="L29">            m.movementStatus = &quot;INVALID&quot;;</span>
+<span class="pc bpc" id="L30" title="1 of 4 branches missed.">        } else if (in == null || out == null) {</span>
+<span class="fc" id="L31">            m.movementStatus = &quot;PARTIAL&quot;;</span>
+<span class="fc bfc" id="L32" title="All 2 branches covered.">        } else if (in &gt; out) {</span>
+<span class="fc" id="L33">            m.movementStatus = &quot;POSITIVE&quot;;</span>
+<span class="fc bfc" id="L34" title="All 2 branches covered.">        } else if (in &lt; out) {</span>
+<span class="fc" id="L35">            m.movementStatus = &quot;NEGATIVE&quot;;</span>
+        } else {
+<span class="fc" id="L37">            m.movementStatus = &quot;BALANCED&quot;;</span>
+        }
+
+<span class="fc" id="L40">        return m;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

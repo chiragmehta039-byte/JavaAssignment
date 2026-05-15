@@ -1,7 +1,6 @@
 package com.fulfilment.application.monolith.warehouses.adapters;
 
 import io.quarkus.test.junit.QuarkusTest;
-import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 
 import static io.restassured.RestAssured.given;
@@ -11,7 +10,7 @@ import static org.hamcrest.Matchers.*;
 public class WarehouseSearchIT {
 
     // -------------------------------
-    // Test: Search with filters
+    // FILTERS
     // -------------------------------
     @Test
     public void testSearchWarehousesWithFilters() {
@@ -19,15 +18,15 @@ public class WarehouseSearchIT {
         given()
                 .queryParam("location", "AMSTERDAM-001")
                 .queryParam("minCapacity", 10)
-        .when()
+                .queryParam("maxCapacity", 500)
+                .when()
                 .get("/warehouse/search")
-        .then()
-                .statusCode(200)
-                .body("size()", greaterThanOrEqualTo(0));
+                .then()
+                .statusCode(200);
     }
 
     // -------------------------------
-    // Test: Pagination
+    // PAGINATION
     // -------------------------------
     @Test
     public void testSearchPagination() {
@@ -35,38 +34,97 @@ public class WarehouseSearchIT {
         given()
                 .queryParam("page", 0)
                 .queryParam("pageSize", 5)
-        .when()
+                .when()
                 .get("/warehouse/search")
-        .then()
+                .then()
                 .statusCode(200)
                 .body("size()", lessThanOrEqualTo(5));
     }
 
     // -------------------------------
-    // Test: Sorting
+    // SORTING ASC
     // -------------------------------
     @Test
-    public void testSearchSorting() {
+    public void testSearchSortingAsc() {
 
         given()
                 .queryParam("sortBy", "capacity")
-                .queryParam("sortOrder", "desc")
-        .when()
+                .queryParam("sortOrder", "asc")
+                .when()
                 .get("/warehouse/search")
-        .then()
+                .then()
                 .statusCode(200);
     }
 
     // -------------------------------
-    // Test: No filters (default)
+    // SORTING DESC
+    // -------------------------------
+    @Test
+    public void testSearchSortingDesc() {
+
+        given()
+                .queryParam("sortBy", "capacity")
+                .queryParam("sortOrder", "desc")
+                .when()
+                .get("/warehouse/search")
+                .then()
+                .statusCode(200);
+    }
+
+    // -------------------------------
+    // DEFAULT SEARCH
     // -------------------------------
     @Test
     public void testSearchWithoutFilters() {
 
         given()
-        .when()
+                .when()
                 .get("/warehouse/search")
-        .then()
+                .then()
+                .statusCode(200);
+    }
+
+    // -------------------------------
+    // ERROR CASE: INVALID SORT FIELD
+    // -------------------------------
+    @Test
+    public void testInvalidSortField() {
+
+        given()
+                .queryParam("sortBy", "invalidField")
+                .when()
+                .get("/warehouse/search")
+                .then()
+                .statusCode(400);
+    }
+
+    // -------------------------------
+    // ERROR CASE: INVALID PAGINATION
+    // -------------------------------
+    @Test
+    public void testInvalidPagination() {
+
+        given()
+                .queryParam("page", -1)
+                .queryParam("pageSize", 0)
+                .when()
+                .get("/warehouse/search")
+                .then()
+                .statusCode(400);
+    }
+
+    // -------------------------------
+    // LOCATION NULL PATH
+    // -------------------------------
+    @Test
+    public void testSearchWithoutLocation() {
+
+        given()
+                .queryParam("minCapacity", 0)
+                .queryParam("maxCapacity", 1000)
+                .when()
+                .get("/warehouse/search")
+                .then()
                 .statusCode(200);
     }
 }

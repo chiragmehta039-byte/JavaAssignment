@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>WarehouseAnalyticsService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">java-code-assignment</a> &gt; <a href="index.source.html" class="el_package">com.fulfilment.application.monolith.warehouses.extra</a> &gt; <span class="el_source">WarehouseAnalyticsService.java</span></div><h1>WarehouseAnalyticsService.java</h1><pre class="source lang-java linenums">package com.fulfilment.application.monolith.warehouses.extra;
+
+import com.fulfilment.application.monolith.warehouses.domain.models.Warehouse;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.ws.rs.WebApplicationException;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+@ApplicationScoped
+<span class="nc" id="L11">public class WarehouseAnalyticsService {</span>
+
+    // -------------------------------
+    // 1. Average capacity
+    // -------------------------------
+    public double averageCapacity(List&lt;Warehouse&gt; list) {
+<span class="nc" id="L17">        validateList(list);</span>
+
+<span class="nc" id="L19">        return list.stream()</span>
+<span class="nc" id="L20">                .filter(Objects::nonNull)</span>
+<span class="nc bnc" id="L21" title="All 2 branches missed.">                .filter(w -&gt; w.capacity != null)</span>
+<span class="nc" id="L22">                .mapToInt(w -&gt; w.capacity)</span>
+<span class="nc" id="L23">                .average()</span>
+<span class="nc" id="L24">                .orElse(0);</span>
+    }
+
+    // -------------------------------
+    // 2. Max stock warehouse
+    // -------------------------------
+    public Warehouse maxStock(List&lt;Warehouse&gt; list) {
+<span class="nc" id="L31">        validateList(list);</span>
+
+<span class="nc" id="L33">        return list.stream()</span>
+<span class="nc" id="L34">                .filter(Objects::nonNull)</span>
+<span class="nc" id="L35">                .max(Comparator.comparingInt(w -&gt; w.stock))</span>
+<span class="nc" id="L36">                .orElseThrow(() -&gt; new WebApplicationException(&quot;No warehouses found&quot;, 404));</span>
+    }
+
+    // -------------------------------
+    // 3. Group by location
+    // -------------------------------
+    public Map&lt;String, List&lt;Warehouse&gt;&gt; groupByLocation(List&lt;Warehouse&gt; list) {
+<span class="nc" id="L43">        validateList(list);</span>
+
+<span class="nc" id="L45">        return list.stream()</span>
+<span class="nc" id="L46">                .filter(Objects::nonNull)</span>
+<span class="nc" id="L47">                .collect(Collectors.groupingBy(</span>
+<span class="nc bnc" id="L48" title="All 2 branches missed.">                        w -&gt; w.location != null ? w.location : &quot;UNKNOWN&quot;</span>
+                ));
+    }
+
+    // -------------------------------
+    // 4. Find overloaded warehouses
+    // -------------------------------
+    public List&lt;Warehouse&gt; findOverloaded(List&lt;Warehouse&gt; list) {
+<span class="nc" id="L56">        validateList(list);</span>
+
+<span class="nc" id="L58">        return list.stream()</span>
+<span class="nc" id="L59">                .filter(Objects::nonNull)</span>
+<span class="nc bnc" id="L60" title="All 4 branches missed.">                .filter(w -&gt; w.capacity != null &amp;&amp; w.stock != null)</span>
+<span class="nc bnc" id="L61" title="All 2 branches missed.">                .filter(w -&gt; w.stock &gt; w.capacity)</span>
+<span class="nc" id="L62">                .toList();</span>
+    }
+
+    // -------------------------------
+    // 5. Find under-utilized warehouses
+    // -------------------------------
+    public List&lt;Warehouse&gt; findUnderUtilized(List&lt;Warehouse&gt; list) {
+<span class="nc" id="L69">        validateList(list);</span>
+
+<span class="nc" id="L71">        return list.stream()</span>
+<span class="nc" id="L72">                .filter(Objects::nonNull)</span>
+<span class="nc bnc" id="L73" title="All 4 branches missed.">                .filter(w -&gt; w.capacity != null &amp;&amp; w.stock != null)</span>
+<span class="nc bnc" id="L74" title="All 2 branches missed.">                .filter(w -&gt; w.stock &lt; (w.capacity * 0.25))</span>
+<span class="nc" id="L75">                .toList();</span>
+    }
+
+    // -------------------------------
+    // 6. Top N warehouses by capacity
+    // -------------------------------
+    public List&lt;Warehouse&gt; topByCapacity(List&lt;Warehouse&gt; list, int n) {
+<span class="nc" id="L82">        validateList(list);</span>
+
+<span class="nc bnc" id="L84" title="All 2 branches missed.">        if (n &lt;= 0) {</span>
+<span class="nc" id="L85">            throw new WebApplicationException(&quot;N must be &gt; 0&quot;, 400);</span>
+        }
+
+<span class="nc" id="L88">        return list.stream()</span>
+<span class="nc" id="L89">                .filter(Objects::nonNull)</span>
+<span class="nc" id="L90">                .sorted((a, b) -&gt; Integer.compare(b.capacity, a.capacity))</span>
+<span class="nc" id="L91">                .limit(n)</span>
+<span class="nc" id="L92">                .toList();</span>
+    }
+
+    // -------------------------------
+    // 7. Validate list
+    // -------------------------------
+    private void validateList(List&lt;Warehouse&gt; list) {
+<span class="nc bnc" id="L99" title="All 2 branches missed.">        if (list == null) {</span>
+<span class="nc" id="L100">            throw new WebApplicationException(&quot;List cannot be null&quot;, 400);</span>
+        }
+<span class="nc" id="L102">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

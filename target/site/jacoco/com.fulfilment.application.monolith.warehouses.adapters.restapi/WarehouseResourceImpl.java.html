@@ -41,7 +41,7 @@ import java.util.List;
     try {
       // Create warehouse through use case (includes validations)
 <span class="fc" id="L43">      createWarehouseOperation.create(domainWarehouse);</span>
-      
+
       // Return the created warehouse
 <span class="fc" id="L46">      return toWarehouseResponse(domainWarehouse);</span>
 <span class="fc" id="L47">    } catch (IllegalArgumentException e) {</span>
@@ -53,11 +53,11 @@ import java.util.List;
   public Warehouse getAWarehouseUnitByID(String id) {
     // Find warehouse by business unit code
 <span class="fc" id="L55">    var domainWarehouse = warehouseRepository.findByBusinessUnitCode(id);</span>
-    
+
 <span class="fc bfc" id="L57" title="All 2 branches covered.">    if (domainWarehouse == null) {</span>
 <span class="fc" id="L58">      throw new WebApplicationException(&quot;Warehouse with business unit code '&quot; + id + &quot;' not found&quot;, 404);</span>
     }
-    
+
 <span class="fc" id="L61">    return toWarehouseResponse(domainWarehouse);</span>
   }
 
@@ -82,7 +82,7 @@ import java.util.List;
   @Override
   @Transactional
   public Warehouse replaceTheCurrentActiveWarehouse(
-      String businessUnitCode, @NotNull Warehouse data) {
+          String businessUnitCode, @NotNull Warehouse data) {
     // Convert API model to domain model
 <span class="fc" id="L87">    var domainWarehouse = new com.fulfilment.application.monolith.warehouses.domain.models.Warehouse();</span>
 <span class="fc" id="L88">    domainWarehouse.businessUnitCode = businessUnitCode; // Use businessUnitCode from path</span>
@@ -179,7 +179,7 @@ import java.util.List;
   }
 
   private Warehouse toWarehouseResponse(
-      com.fulfilment.application.monolith.warehouses.domain.models.Warehouse warehouse) {
+          com.fulfilment.application.monolith.warehouses.domain.models.Warehouse warehouse) {
 <span class="fc" id="L183">    var response = new Warehouse();</span>
 <span class="fc" id="L184">    response.setBusinessUnitCode(warehouse.businessUnitCode);</span>
 <span class="fc" id="L185">    response.setLocation(warehouse.location);</span>

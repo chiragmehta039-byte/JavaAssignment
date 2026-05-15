@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DbWarehouseCapacityAlert.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">java-code-assignment</a> &gt; <a href="index.source.html" class="el_package">com.fulfilment.application.monolith.warehouses.adapters.database</a> &gt; <span class="el_source">DbWarehouseCapacityAlert.java</span></div><h1>DbWarehouseCapacityAlert.java</h1><pre class="source lang-java linenums">package com.fulfilment.application.monolith.warehouses.adapters.database;
+
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = &quot;warehouse_capacity_alert&quot;)
+<span class="fc" id="L8">public class DbWarehouseCapacityAlert {</span>
+
+    @Id
+    @GeneratedValue
+    public Long id;
+
+    public Integer capacity;
+    public Integer used;
+    public String level;
+
+    public LocalDateTime createdAt;
+
+    public static DbWarehouseCapacityAlert create(Integer capacity, Integer used) {
+<span class="fc" id="L21">        DbWarehouseCapacityAlert a = new DbWarehouseCapacityAlert();</span>
+<span class="fc" id="L22">        a.capacity = capacity;</span>
+<span class="fc" id="L23">        a.used = used;</span>
+<span class="fc" id="L24">        a.createdAt = LocalDateTime.now();</span>
+
+<span class="pc bpc" id="L26" title="1 of 4 branches missed.">        if (capacity == null || used == null) {</span>
+<span class="fc" id="L27">            a.level = &quot;UNKNOWN&quot;;</span>
+<span class="fc bfc" id="L28" title="All 2 branches covered.">        } else if (used &gt; capacity) {</span>
+<span class="fc" id="L29">            a.level = &quot;CRITICAL&quot;;</span>
+<span class="fc bfc" id="L30" title="All 2 branches covered.">        } else if (used.equals(capacity)) {</span>
+<span class="fc" id="L31">            a.level = &quot;FULL&quot;;</span>
+        } else {
+<span class="fc" id="L33">            a.level = &quot;SAFE&quot;;</span>
+        }
+
+<span class="fc" id="L36">        return a;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

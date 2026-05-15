@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DbWarehouseFailureRegistry.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">java-code-assignment</a> &gt; <a href="index.source.html" class="el_package">com.fulfilment.application.monolith.warehouses.adapters.database</a> &gt; <span class="el_source">DbWarehouseFailureRegistry.java</span></div><h1>DbWarehouseFailureRegistry.java</h1><pre class="source lang-java linenums">package com.fulfilment.application.monolith.warehouses.adapters.database;
+
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = &quot;warehouse_failure_registry&quot;)
+<span class="nc" id="L7">public class DbWarehouseFailureRegistry {</span>
+
+    @Id @GeneratedValue
+    public Long id;
+
+    public String warehouseCode;
+    public String failureType;
+    public Integer severity;
+
+    public String resolutionStatus;
+
+    public static DbWarehouseFailureRegistry create(String code, String type, Integer severity) {
+
+<span class="nc" id="L20">        DbWarehouseFailureRegistry f = new DbWarehouseFailureRegistry();</span>
+
+<span class="nc" id="L22">        f.warehouseCode = code;</span>
+<span class="nc" id="L23">        f.failureType = type;</span>
+<span class="nc" id="L24">        f.severity = severity;</span>
+
+<span class="nc bnc" id="L26" title="All 4 branches missed.">        if (code == null || type == null) {</span>
+<span class="nc" id="L27">            f.resolutionStatus = &quot;INVALID&quot;;</span>
+<span class="nc bnc" id="L28" title="All 2 branches missed.">        } else if (severity == null) {</span>
+<span class="nc" id="L29">            f.resolutionStatus = &quot;UNKNOWN&quot;;</span>
+<span class="nc bnc" id="L30" title="All 2 branches missed.">        } else if (severity &gt; 80) {</span>
+<span class="nc" id="L31">            f.resolutionStatus = &quot;CRITICAL&quot;;</span>
+<span class="nc bnc" id="L32" title="All 2 branches missed.">        } else if (severity &gt; 40) {</span>
+<span class="nc" id="L33">            f.resolutionStatus = &quot;MAJOR&quot;;</span>
+        } else {
+<span class="nc" id="L35">            f.resolutionStatus = &quot;MINOR&quot;;</span>
+        }
+
+<span class="nc" id="L38">        return f;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
